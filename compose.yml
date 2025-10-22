@@ -1,0 +1,90 @@
+services:
+  frontend:
+    image: frontend-local:latest
+    ports:
+      - 3000:80
+    depends_on:
+      - api-gateway
+    networks:
+      - microservices-net
+
+  api-gateway:
+    image: api-gateway-local:latest
+    ports:
+      - 8080:8080
+    depends_on:
+      - user-ms
+      - billing-ms
+    networks:
+      - microservices-net
+
+  user-ms:
+    image: user-ms-local:latest
+    depends_on:
+      - postgres
+      - nats
+    environment:
+      - DB_SOURCE=postgresql://postgres:postgres@postgres:5432/userdb?sslmode=disable
+      - NATS_URL=nats://nats:4222
+    networks:
+      - microservices-net
+
+  billing-ms:
+    image: billing-ms-local:latest
+    depends_on:
+      - postgres
+      - nats
+      - notification-ms
+    environment:
+      - DB_SOURCE=postgresql://postgres:postgres@postgres:5432/billingdb?sslmode=disable
+      - NATS_URL=nats://nats:4222
+    networks:
+      - microservices-net
+
+  notification-ms:
+    image: notification-ms-local:latest
+    depends_on:
+      - nats
+    environment:
+      - NATS_URL=nats://nats:4222
+    networks:
+      - microservices-net
+
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB_USER=userdb
+      - POSTGRES_DB_BILLING=billingdb
+    volumes:
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    ports:
+      - "5432:5432"
+    networks:
+      - microservices-net
+
+  pgadmin4:
+    image: elestio/pgadmin:REL-9_3
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: root@email.com
+      PGADMIN_DEFAULT_PASSWORD: passwd
+      PGADMIN_LISTEN_PORT: 9090
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 40
+    ports:
+      - 9090:9090
+    networks:
+      - microservices-net
+
+  nats:
+    image: nats:2.9
+    ports:
+      - 4222:4222
+      - 8222:8222
+    networks:
+      - microservices-net
+
+networks:
+  microservices-net:
+    driver: bridge

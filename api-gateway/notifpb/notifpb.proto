@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package notifpb;
+
+option go_package = "./notifpb";
+
+// The Notification service definition.
+service NotificationService {
+  // A server-streaming RPC for a client to subscribe to notifications.
+  // The client sends its user_id, and the server streams notifications back.
+  rpc SubscribeToNotifications (SubscribeRequest) returns (stream Notification);
+}
+
+message SubscribeRequest {
+  string user_id = 1;
+}
+
+message Notification {
+  string id = 1;
+  string user_id = 2;
+  string message = 3;
+  string timestamp = 4; // ISO 8601 timestamp
+}

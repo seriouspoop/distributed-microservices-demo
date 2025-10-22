@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package billingpb;
+
+option go_package = "./billingpb";
+
+message BillingAccount {
+    string user_id = 1;
+    double amount = 2;
+}
+
+message CreateBillingAccountRequest {
+    string user_id = 1;
+}
+
+message CreateBillingAccountResponse {
+    bool success = 1;
+}
+
+message GetBillingRequest {
+    string user_id = 1;
+}
+
+message GetBillingResponse {
+    double amount = 1;
+}
+
+message UpdateBillingRequest {
+    string user_id = 1;
+    double amount = 2;
+}
+
+message UpdateBillingResponse {
+    bool success = 1;
+}
+
+service BillingService {
+    rpc CreateBillingAccount(CreateBillingAccountRequest) returns (CreateBillingAccountResponse);
+    rpc GetBilling(GetBillingRequest) returns (GetBillingResponse);
+    rpc UpdateBilling(UpdateBillingRequest) returns (UpdateBillingResponse);
+}
+
